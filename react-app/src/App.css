@@ -1,0 +1,19 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* .react-chatbot-kit-chat-container {
+  width: 500px !important;
+}
+
+.react-chatbot-kit-chat-message {
+  margin-left: 0px;
+}
+
+.react-chatbot-kit-chat-btn-send {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */

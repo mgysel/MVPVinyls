@@ -1,0 +1,1155 @@
+swagger: '2.0'
+info:
+  description: Vinyl store with Spotify recommendations
+  version: 3.0.0
+  title: Vinyl Store
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+# host: petstore.swagger.io
+# basePath: /v2
+tags:
+- name: auth
+  description: Operations for authorising
+- name: user
+  description: Operations for user account management and carts
+- name: product
+  description: Operations about products
+- name: payment
+  description: Operations about payment
+- name: order
+  description: Operations about orders
+- name: admin
+  description: Operations for admin inventory management, user management, and sales insight
+- name: chatbot
+  description: Operations about chatbot
+  
+# - http
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    TokenReturn:
+      description: Successful JWT
+    MalformedError:
+      description: Input is malformed
+
+paths:
+  /auth/login:
+    post:
+      tags:
+      - auth
+      summary: Login to vinyl store
+      operationId: login
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: email
+        in: query
+        description: The email for login
+        required: true
+        type: string
+      - name: password
+        in: query
+        description: The password for login
+        required: true
+        type: string
+      responses:
+        200:
+          $ref: '#/components/responses/TokenReturn'
+        403:
+          description: Incorrect credentials
+          
+  /auth/logout:
+    post:
+      tags:
+      - auth
+      summary: Logout of vinyl store
+      operationId: logout
+      responses:
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        200:
+          description: Logout Successful
+      security:
+      - bearerAuth: []
+
+  /auth/register:
+    post:
+      tags:
+      - auth
+      summary: Register a new account
+      operationId: register
+      produces:
+      - application/json
+      parameters:
+      - name: email
+        in: query
+        description: The email for login
+        required: true
+        type: string
+      - name: password
+        in: query
+        description: The password for login
+        required: true
+        type: string
+      - name: first_name
+        in: query
+        description: First name of user
+        required: true
+        type: string
+      - name: last_name
+        in: query
+        description: Last name of user
+        required: true
+        type: string
+      responses:
+        200:
+          $ref: '#/components/responses/TokenReturn'
+        400:
+          $ref: '#/components/responses/MalformedError'
+        409:
+          description: 'User already exists'
+
+  /auth/reset/request:
+    post:
+      tags:
+      - auth
+      summary: Request an email to be sent for resetting password
+      operationId: reset_request
+      parameters:
+      - name: email
+        in: query
+        description: The email for login
+        required: true
+        type: string
+      responses:
+        200:
+          description: 'Sent to email'
+        401:
+          description: 'User with email does not exist'
+        400:
+          $ref: '#/components/responses/MalformedError'
+
+  /auth/reset/reset:
+    post:
+      tags:
+      - auth
+      summary: Use code sent to email to reset
+      operationId: reset_reset
+      parameters:
+      - name: reset_code
+        in: query
+        description: Code sent to email to reset
+        required: true
+        type: string
+      - name: email
+        in: query
+        description: Email to reset
+        required: true
+        type: string
+      - name: password
+        in: query
+        description: New password
+        required: true
+        type: string
+      responses:
+        201:
+          $ref: '#/components/responses/TokenReturn'
+        401:
+          description: 'Wrong code for email'
+        403:
+          description: 'Email does not exist'
+        400:
+          $ref: '#/components/responses/MalformedError'
+
+  /user/profile:
+    get:
+      tags:
+      - user
+      summary: Get user profile
+      description: This can only be done by the logged in user.
+      operationId: profile
+      produces:
+      - application/json
+      responses:
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        201:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
+      security:
+      - bearerAuth: []
+  
+  /user/profile/editUser:
+    put:
+      tags:
+      - user
+      summary: Edit a user's information
+      description: This can only be done by the logged in user. Must ensure that they don't attempt to change password/other properties that shouldnt be changed here.
+      operationId: profile_editUser
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: User object to change
+        required: true
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        201:
+          description: 'Updated user object'
+      security:
+      - bearerAuth: []
+
+  /user/profile/editUserPassword:
+    put:
+      tags:
+      - user
+      summary: Edit a user's password
+      description: This can only be done by the logged in user.
+      operationId: profile_editUserPassword
+      produces:
+      - application/json
+      parameters:
+      - name: old_password
+        in: query
+        description: The current password for login
+        required: true
+        type: string
+      - name: new_password
+        in: query
+        description: The new password for login
+        required: true
+        type: string
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        403:
+          description: 'Incorrect password'
+        201:
+          description: Updated user password
+      security:
+      - bearerAuth: []
+
+  /user/cart/add:
+    post:
+      tags:
+      - user
+      summary: Add product to user cart
+      description: This can only be done by the logged in user.
+      operationId: cart_add
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Cart item object to add
+        required: true
+        schema:
+          $ref: '#/definitions/Cart%20Item'
+      responses:
+      #   400:
+      #     description: 'Product and quantity required to add product to cart'
+      #   400:
+      #     description: 'Invalid Product'
+      #   400:
+      #     description: 'Invalid quantity'
+      #   400:
+      #     description: 'Product does not exist in the database'
+      #   400:
+      #     description: 'User does not exist in the database'
+      #   400:
+      #     description: 'Insufficient inventory'
+        201:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cart%20Item'
+      security:
+      - bearerAuth: []
+
+  /user/cart/edit:
+    put:
+      tags:
+      - user
+      summary: Edit user cart
+      description: This can only be done by the logged in user.
+      operationId: cart_edit
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: New user cart
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Cart%20Item'
+      responses:
+      #   400:
+      #     description: 'Cart required to edit cart'
+      #   400:
+      #     description: 'User does not exist in the database'
+      #   400:
+      #     description: 'Product does not exist in the database'
+      #   400:
+      #     description: 'Invalid quantity'
+      #   400:
+      #     description: 'Insufficient inventory'
+        201:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cart%20Item'
+      security:
+      - bearerAuth: []
+
+  /payment/create-checkout-session:
+    post:
+      tags:
+      - payment
+      summary: Create Stripe checkout session for user
+      description: This can only be done by the logged in user.
+      operationId: create_checkout_session
+      produces:
+      - application/json
+      parameters:
+      - name: success_url
+        in: query
+        description: URL to direct to for successful payment
+        required: true
+        type: string
+      - name: cancel_url
+        in: query
+        description: URL to direct to for cancelled payment
+        required: true
+        type: string
+      responses:
+        201:
+          description: successful operation
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+      security:
+      - bearerAuth: []
+
+  /product/<product_id>:
+    get:
+      tags:
+      - product
+      summary: Get product information
+      description: This can only be done by the logged in user.
+      operationId: product
+      produces:
+      - application/json
+      parameters:
+      - name: product_id
+        in: path
+        description: ID of product to get
+        required: true
+        type: string
+      responses:
+        404:
+          description: 'Could not find product'
+        200:
+          description: 'Success'
+          schema:
+            $ref: '#/definitions/Product'
+
+  /product/<product_id>/recommend:
+    get:
+      tags:
+      - product
+      summary: Get recommended products based on a product
+      description: This can only be done by the logged in user.
+      operationId: product_recommend
+      produces:
+      - application/json
+      parameters:
+      - name: product_id
+        in: path
+        description: ID of product to base recommendations on
+        required: true
+        type: string
+      responses:
+        404:
+          description: 'Could not find product'
+        200:
+          description: 'Success'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Product'
+
+  /product/recommend_top_spotify:
+    get:
+      tags:
+      - product
+      summary: Get recommended products based on Spotify account
+      description: This can only be done by the logged in user.
+      operationId: recommend_top_spotify
+      produces:
+      - application/json
+      parameters:
+      - name: request
+        in: query
+        description: Spotify oauth2 thingo
+        required: true
+        type: string
+      responses:
+        404:
+          description: 'There was an error attempting to retrieve recommendations. Please try again.'
+        200:
+          description: 'Success'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Product'
+
+  /product/search:
+    get:
+      tags:
+      - product
+      summary: Search for a product
+      description: This can only be done by the logged in user.
+      operationId: search
+      produces:
+      - application/json
+      parameters:
+      - name: q
+        in: query
+        description: Query string for search
+        required: false
+        default: ''
+        type: string
+      - name: page
+        in: query
+        description: Page number of results
+        required: false
+        default: '1'
+        type: string
+      - name: type
+        in: query
+        description: Specify a field to search on
+        required: false
+        enum:
+        - album
+        - artist
+        - song
+        type: string
+      - name: genre
+        in: query
+        description: Comma separated list of genres to filter by
+        required: false
+        type: string
+      - name: order_by
+        in: query
+        description: Field to sort results by
+        required: false
+        default: 'alphabetical'
+        enum:
+        - alphabetical
+        - price
+        type: string
+      - name: sort
+        in: query
+        description: Direction to order sorted results by
+        required: false
+        default: 'ascending'
+        enum:
+        - ascending
+        - descending
+        type: string
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+        200:
+          description: 'Success'
+          schema:
+            type: object
+            properties:
+              product_list:
+                type: array
+                items:
+                  $ref: '#/definitions/Product'
+              genre_list:
+                type: array
+                items:
+                  type: string
+              total_items:
+                type: integer
+      
+  /product/spotify_callback:
+    get:
+      tags:
+      - product
+      summary: Authenticate spotify token
+      description: This can only be done by the logged in user.
+      operationId: spotify_callback
+      produces:
+      - application/json
+      parameters:
+      - name: request
+        in: query
+        description: Spotify oauth2 thingo
+        required: true
+        type: string
+      responses:
+        404:
+          description: 'Authorisation from spotify failed. Please try again.'
+        200:
+          description: 'Successfully authorised.'
+
+  /admin/products/add:
+    post:
+      tags:
+      - admin
+      summary: Add product to database
+      description: This can only be done by an administrator.
+      operationId: products_add
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Product object to add
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+      responses:
+        401:
+          description: 'Unauthorised, this feature is only used by admins'
+        400:
+          description: 'Adding product failed, do not supply product ID when adding.'
+      #   400:
+      #     description: 'Adding product failed'
+      #   400:
+      #     description: 'Invalid product object passed'
+        200:
+          description: Success
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+      security:
+      - bearerAuth: []
+
+  /admin/products/edit/<product_id>:
+    put:
+      tags:
+      - admin
+      summary: Edit product in database
+      description: This can only be done by an administrator.
+      operationId: products_edit
+      produces:
+      - application/json
+      parameters:
+      - name: product_id
+        in: path
+        description: ID of product to edit
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Product object of edited product
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+      responses:
+        401:
+          description: 'Unauthorised, this feature is only used by admins'
+        400:
+          description: 'Invalid properties passed to edit.'
+        404:
+          description: 'Could not find original product to edit'
+        200:
+          description: 'Successfully edited product'
+          schema:
+            $ref: '#/definitions/Product'
+      security:
+      - bearerAuth: []
+
+  /admin/products/remove/<product_id>:
+    put:
+      tags:
+      - admin
+      summary: Add product to database
+      description: This can only be done by an administrator.
+      operationId: products_add
+      produces:
+      - application/json
+      parameters:
+      - name: product_id
+        in: path
+        description: ID of product to edit
+        required: true
+        type: string
+      - in: body
+        name: body
+        description: Product object to add
+        required: true
+        schema:
+          $ref: '#/definitions/Product'
+      responses:
+        401:
+          description: 'Unauthorised, this feature is only used by admins'
+        400:
+          description: 'Invalid properties passed to edit.'
+        404:
+          description: 'Could not find original product to edit'
+        200:
+          description: 'Successfully edited product'
+          schema:
+            $ref: '#/definitions/Product'
+      security:
+      - bearerAuth: []
+
+  /admin/permissions/promote:
+    put:
+      tags:
+      - admin
+      summary: Promote a regular user to administrator.
+      description: This can only be done by an administrator.
+      operationId: permissions_promote
+      produces:
+      - application/json
+      parameters:
+      - name: _id
+        in: query
+        description: ID of user to promote
+        required: true
+        type: string
+      responses:
+        403:
+          description: 'The current user is not an administrator and cannot promote a user.'
+        400:
+          $ref: '#/components/responses/MalformedError'
+        # 403:
+        #   description: 'The user is already an administrator.'
+        # 403:
+        #   description: 'User does not exist in the database.'
+        201:
+          description: 'User updated to admin.'
+      security:
+      - bearerAuth: []
+
+  /admin/permissions/demote:
+    put:
+      tags:
+      - admin
+      summary: Demote an administator to a regular user.
+      description: This can only be done by an administrator.
+      operationId: permissions_demote
+      produces:
+      - application/json
+      parameters:
+      - name: _id
+        in: query
+        description: ID of administrator to demote
+        required: true
+        type: string
+      responses:
+        403:
+          description: 'The current user is not an administrator and cannot promote a user.'
+        400:
+          $ref: '#/components/responses/MalformedError'
+        # 403:
+        #   description: 'The user is already a user.'
+        # 403:
+        #   description: 'User does not exist in the database.'
+        201:
+          description: 'User updated to admin.'
+      security:
+      - bearerAuth: []
+
+  /admin/permissions/search:
+    get:
+      tags:
+      - admin
+      summary: Search for a user.
+      description: This can only be done by an administrator.
+      operationId: permissions_search
+      produces:
+      - application/json
+      parameters:
+      - name: q
+        in: query
+        description: Query string for search
+        required: false
+        default: ''
+        type: string
+      - name: page
+        in: query
+        description: Page number of results
+        required: false
+        default: '1'
+        type: string
+      responses:
+        400:
+          description: 'Invalid page number'
+        200:
+          description: 'Success'
+          schema:
+            type: object
+            properties:
+              user_list:
+                type: array
+                items:
+                  $ref: '#/definitions/User'
+      security:
+      - bearerAuth: []
+
+  /admin/order/fulfill:
+    put:
+      tags:
+      - admin
+      summary: Fulfill an order in the database
+      description: This can only be done by an administrator.
+      operationId: order_fulfill
+      produces:
+      - application/json
+      parameters:
+      - name: order_id
+        in: query
+        description: ID of order to fulfill
+        required: true
+        type: string
+      responses:
+        403:
+          description: 'The current user is not an administrator and cannot fulfill an order.'
+        400:
+          $ref: '#/components/responses/MalformedError'
+        # 403:
+        #   description: 'Order does not exist in the database.'
+        201:
+          description: 'Order fulfilled.'
+      security:
+      - bearerAuth: []
+
+  /admin/dashboard/revenue:
+    get:
+      tags:
+      - admin
+      summary: Returns revenue dashboard data in Recharts format.
+      description: This can only be done by an administrator.
+      operationId: dashboard_revenue
+      produces:
+      - application/json
+      parameters:
+      - name: scope
+        in: query
+        description: Temporal scope of graph to display
+        required: true
+        enum:
+        - day
+        - hour
+        - month
+        type: string
+      responses:
+        401:
+          description: 'The current user is not an administrator.'
+        200:
+          description: 'Success.'
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  format: date
+                revenue:
+                  type: number
+                  format: double
+      security:
+      - bearerAuth: []
+
+  /admin/dashboard/customers:
+    get:
+      tags:
+      - admin
+      summary: Returns new customers orders data in Recharts format.
+      description: This can only be done by an administrator.
+      operationId: dashboard_customers
+      produces:
+      - application/json
+      parameters:
+      - name: scope
+        in: query
+        description: Temporal scope of graph to display
+        required: true
+        enum:
+        - day
+        - hour
+        - month
+        type: string
+      responses:
+        401:
+          description: 'The current user is not an administrator.'
+        200:
+          description: 'Success.'
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  format: date
+                new_customers:
+                  type: number
+                  format: int32
+      security:
+      - bearerAuth: []
+
+  /order/add:
+    post:
+      tags:
+      - order
+      summary: Add new order to database
+      description: This can only be done by a logged in user.
+      operationId: order_add
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Cart item object to add
+        required: true
+        schema:
+          type: object
+          properties:
+            order:
+              type: array
+              items:
+                $ref: '#/definitions/Cart%20Item'
+            shipping_details:
+              $ref: '#/definitions/Shipping%20Details'
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+        201:
+          description: 'Success.'
+      security:
+      - bearerAuth: []
+          
+  /order/user:
+    get:
+      tags:
+      - order
+      summary: Gets all orders for user from database
+      description: This can only be done by a logged in user.
+      operationId: order_user
+      produces:
+      - application/json
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+        201:
+          description: 'Success.'
+          schema:
+            type: object
+            properties:
+              orders:
+                type: array
+                items:
+                  $ref: '#/definitions/Order'
+
+  /order/<order_id>:
+    get:
+      tags:
+      - order
+      summary: Get a specific order given an ID
+      description: This can only be done by a logged in user.
+      operationId: order_order
+      produces:
+      - application/json
+      parameters:
+      - name: order_id
+        in: path
+        description: ID of order to get
+        required: true
+        type: string
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+        201:
+          description: 'Success.'
+          schema:
+            type: object
+            $ref: '#/definitions/Order'
+      security:
+      - bearerAuth: []
+
+  /order/search:
+    get:
+      tags:
+      - product
+      summary: Search for a product
+      description: This can only be done by the logged in user.
+      operationId: search
+      produces:
+      - application/json
+      parameters:
+      - name: order_id
+        in: query
+        description: order_id to search
+        required: true
+        default: ''
+        type: string
+      - name: page
+        in: query
+        description: Page number of results
+        required: true
+        default: '1'
+        type: string
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+        200:
+          description: 'Success.'
+          schema:
+            type: object
+            properties:
+              orders:
+                type: array
+                items:
+                  $ref: '#/definitions/Order'
+      security:
+      - bearerAuth: []
+
+  /chatbot/query:
+    get:
+      tags:
+      - chatbot
+      summary: Returns message and products/orders for chatbot to display based on query
+      description: This can only be done by the logged in user.
+      operationId: chatbot_query
+      produces:
+      - application/json
+      parameters:
+      - name: type
+        in: query
+        description: type of query
+        required: true
+        type: string
+        enum:
+        - product
+        - delivery
+        - warranty
+      - name: message
+        in: query
+        description: search query string
+        required: true
+        type: string
+      responses:
+        400:
+          $ref: '#/components/responses/MalformedError'
+        200:
+          description: 'Success.'
+          schema:
+            type: object
+            properties:
+              reply:
+                type: string
+              date:
+                type: string
+                format: date
+              order:
+                type: object
+                $ref: '#/definitions/Order'
+              products:
+                type: array
+                items:
+                  $ref: '#/definitions/Product'
+      security:
+      - bearerAuth: []
+
+
+
+securityDefinitions:
+  petstore_auth:
+    type: oauth2
+    authorizationUrl: http://petstore.swagger.io/oauth/dialog
+    flow: implicit
+    scopes:
+      write:pets: modify pets in your account
+      read:pets: read your pets
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+
+
+definitions:
+  User:
+    type: object
+    properties:
+      _id:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+        format: pbkdf2-sha256
+      first_name:
+        type: string
+      last_name:
+        type: string
+      payment_methods: 
+        type: array 
+        items: 
+          type: string
+      shipping_addresses:
+        type: array
+        items: 
+          type: string
+          format: address
+      spotify_id:
+        type: string
+      cart:
+        type: array
+        items:
+          $ref: '#/definitions/Cart%20Item'
+      role:
+        type: string
+      reset_code:
+        type: string
+
+  Product:
+    type: object
+    properties:
+      _id: 
+        type: string
+        format: ObjectID
+      artists:
+        type: array
+        items:
+          type: object
+          properties:
+            name: 
+              type: string
+      album:
+        type: string
+      stock:
+        type: integer
+      price : 
+        type: number
+        format: double
+      genres:
+        type: array
+        items:
+          type: string
+      images: 
+        type: array
+        items:
+          type: object
+          properties:
+            base64:
+              type: string
+              format: base64
+      songs:
+        type: array
+        items:
+          type: object
+          properties:
+            name: 
+              type: string
+            length:
+              type: integer
+
+  Cart Item:
+    type: object
+    properties:
+      product:
+        $ref: '#/definitions/Product'
+      quantity:
+        type: integer
+        format: int64
+
+  Shipping Details:
+    type: object
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      street:
+        type: string
+      city:
+        type: string
+      postcode:
+        type: string
+      state:
+        type: string
+      email:
+        type: string
+
+  Order:
+    type: object
+    properties:
+      _id: 
+        type: string
+        format: ObjectID
+      user_id:
+        type: string
+        format: ObjectID
+      date:
+        type: number
+        format: date
+      order:
+        type: array
+        items:
+          $ref: '#/definitions/Cart%20Item'
+      shipping_details:
+        $ref: '#/definitions/Shipping%20Details'
+      fulfilled:
+        type: boolean
+      
+  API Response:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      data:
+        type: object
+
+
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /Real-MVPs/vinyl-store/3.0.0
+schemes:
+ - https
+ - http

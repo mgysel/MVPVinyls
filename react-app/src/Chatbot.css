@@ -1,0 +1,13 @@
+.react-chatbot-kit-chat-container {
+  width: 400px;
+}
+
+.react-chatbot-kit-chat-bot-message {
+  margin-left: 0px;
+}
+
+.react-chatbot-kit-chat-btn-send {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

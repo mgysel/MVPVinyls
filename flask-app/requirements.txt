@@ -1,0 +1,14 @@
+flask==1.1.2
+flask_cors==3.0.10
+flask_mail
+pymongo==3.11.3
+dnspython==2.1.0
+Werkzeug==1.0.1
+python3-discogs-client==2.3.10
+spotipy==2.16.1
+PyJWT==2.0.1
+pymongo==3.11.3
+pandas==1.2.2
+sklearn
+stripe==2.56.0
+jellyfish==0.8.2
