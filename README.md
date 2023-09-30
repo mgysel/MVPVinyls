@@ -1,6 +1,18 @@
 # MVP Vinyls
 
-MVP Vinyls is an e-commerce recommender system developed by The Real MVPs.
+MVP Vinyls is an e-commerce web application using ReactJS, Flask, and MongoDB that allows users to buy and sell music records, receive record recommendations based on past preferences, and ask a simple chatbot common questions. For an in-depth discussion of the project, including the system overview, objectives and functionalities, third-party functionalities, implementation challenges, and user documentation/manual, refer to `COMP3900 Final Report`. 
+
+## Problem
+
+Anyone who has ever purchased vinyl records online has struggled finding new records they actually want to buy. There are two main causes of this: e-commerce vinyl record websites hinder the user’s ability to easily browse records and offer ill-suited record recommendations. E-Commerce companies selling vinyl records rarely specialise in selling vinyl records; moreover, this lack of specialisation leads to difficult record browsing and ill-suited record recommendations. When entering Amazon, the largest retailer of new vinyl in the world, users are not shown recommendations for vinyl records to purchase, but for new Prime Video shows to watch, ceramic bowls to buy, and foot cream (Forbes, 2018; RIAA, 2018). In order to search for a vinyl record, the user must type in a keyword, select ‘CDs & Vinyl’ under a long dropdown list, press search, where they are then directed to search results filled with CD’s and Cassettes and hopefully vinyl records. There is no browsing vinyl records on Amazon. 
+
+E-Commerce companies that do focus on selling vinyl records allow users to browse vinyl records to purchase, but offer ill-suited record recommendations. When searching ‘David Bowie & Morrissey - Cosmic Dancer’ on Discogs, the largest retailer of used vinyl records in the world, the user is only shown recommendations of other David Bowie records or other Morrissey records. Amazingly, the user is shown recommendations for three different versions of Cosmic Dancer, the record they just searched for. Clearly, these recommendations do not allow users to discover the new records they desire.
+
+## Solution
+
+MVP Vinyls is an e-commerce vinyl record company that empowers users to find records they actually want by solving these browsing and recommendation issues in the existing marketplace. 
+Users can login to their accounts; browse for vinyl records to purchase; receive record recommendations based on a specific vinyl record, based on their order history, and based on their Spotify listening history; get any questions answered by a chatbot; and of course, purchase the records themselves. Notably, these recommendations leverage the wealth of digital music data through the Spotify API in order to refine product recommendations for each user. As more music is listened to through streaming services than any other individual source, MVP Vinyls’ recommendation system is unparalleled in the existing marketplace (RIAA, 2018). Lastly, administrators can login to their accounts where they can manage inventory and view business insights from sales data, giving them all the tools necessary to maximise profits for MVP Vinyls.
+
 
 ## Installation and Dependencies
 Download the source code from the [master branch](https://github.com/unsw-cse-comp3900-9900-21T1/capstone-project-3900-w11b-the-real-mvps/tree/master).
