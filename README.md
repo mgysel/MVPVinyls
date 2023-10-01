@@ -1,6 +1,6 @@
 # MVP Vinyls
 
-MVP Vinyls is an e-commerce web application using ReactJS, Flask, and MongoDB that allows users to buy and sell music records, receive record recommendations based on past preferences, and ask a simple chatbot common questions. For an in-depth discussion of the project, including the system overview, objectives and functionalities, third-party functionalities, implementation challenges, and user documentation/manual, refer to `COMP3900 Final Report`. 
+MVP Vinyls is an e-commerce web application using ReactJS, Flask, and MongoDB that allows users to buy and sell music records, receive record recommendations based on past preferences, and ask a simple chatbot common questions. For an in-depth discussion of the project, including the system overview, objectives and functionalities, third-party functionalities, implementation challenges, and user documentation/manual, refer to `COMP3900 Final Report.pdf`. 
 
 ## Problem
 
